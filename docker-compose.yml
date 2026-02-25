@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: omecllg-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    networks:
+      - omecllg-network
+
+  redis:
+    image: redis:alpine
+    container_name: omecllg-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - omecllg-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: omecllg-backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/omecllg
+      - REDIS_URL=redis://redis:6379
+      - CLIENT_URL=http://localhost:3001
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+    networks:
+      - omecllg-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+        - NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+    container_name: omecllg-frontend
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - omecllg-network
+
+networks:
+  omecllg-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  redis-data:
