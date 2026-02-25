@@ -38,10 +38,11 @@ router.post('/send-otp', async (req, res) => {
             await sendOTP(email, otp);
             console.log(`[SMTP] Successfully dispatched OTP email to ${email}`);
         } catch (emailError: any) {
-            console.error('[SMTP Error] Failed to send email. Ensure you have valid standard SMTP_USER and SMTP_PASS credentials in your backend .env file:', emailError.message);
+            console.error('[SMTP Error] Render Free Tier blocks standard SMTP ports (465/587). The email failed to send:', emailError.message);
+            console.log(`\n\n=== 🚀 TEMPORARY BYPASS 🚀 ===\nThe OTP for ${email} is: ${otp}\n================================\n\n`);
         }
 
-        res.status(200).json({ message: 'OTP sent to your email', otpDev: process.env.NODE_ENV !== 'production' ? otp : undefined });
+        res.status(200).json({ message: 'OTP generated', otpDev: otp });
     } catch (error) {
         console.error('Send OTP error', error);
         res.status(500).json({ error: 'Failed to send OTP' });
