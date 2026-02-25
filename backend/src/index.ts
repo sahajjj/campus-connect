@@ -16,16 +16,25 @@ import { initializeSocket } from './socket';
 const app = express();
 const server = http.createServer(app);
 
+const allowedOrigins = (origin: string | undefined, callback: any) => {
+    if (!origin || origin.includes('localhost') || origin.endsWith('vercel.app') || origin === process.env.CLIENT_URL) {
+        callback(null, true);
+    } else {
+        callback(new Error('Not allowed by CORS'));
+    }
+};
+
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL || '*',
+        origin: allowedOrigins,
         methods: ['GET', 'POST'],
+        credentials: true,
     },
 });
 
 app.use(helmet());
 app.use(cors({
-    origin: process.env.CLIENT_URL || '*',
+    origin: allowedOrigins,
     credentials: true,
 }));
 app.use(express.json());
