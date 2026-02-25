@@ -13,7 +13,7 @@ export const useSocket = () => {
     useEffect(() => {
         if (!isAuthenticated || !token) return;
 
-        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:5000';
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'https://campus-connect-xzqv.onrender.com';
         socketRef.current = io(socketUrl, {
             auth: { token },
         });
